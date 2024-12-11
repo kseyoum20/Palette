@@ -1,7 +1,6 @@
 package com.plcoding.landmarkrecognitiontensorflow
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -13,8 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import com.plcoding.landmarkrecognitiontensorflow.domain.FileUtils
-import com.plcoding.landmarkrecognitiontensorflow.domain.PalmModel
 import com.plcoding.landmarkrecognitiontensorflow.domain.ImagePreprocessor
 import com.plcoding.landmarkrecognitiontensorflow.domain.FingertipModel
 import android.Manifest
@@ -31,7 +28,6 @@ import android.graphics.Matrix
 import androidx.camera.core.*
 
 class MainActivity : ComponentActivity() {
-    private lateinit var palmModel: PalmModel
     private lateinit var fingertipModel: FingertipModel
     private lateinit var imagePreprocessor: ImagePreprocessor
 
@@ -59,7 +55,6 @@ class MainActivity : ComponentActivity() {
 //        inputStream.close()
 
         setContent {
-            val scope = rememberCoroutineScope()
             var currentScreen by remember { mutableStateOf("camera") }
             var processedImage by remember { mutableStateOf<Bitmap?>(null) }
             val controller = remember {
@@ -84,27 +79,16 @@ class MainActivity : ComponentActivity() {
                         Button(
                             onClick = {
                                 takePhoto(controller) { bitmap ->
-                                    val (_, maskedBitmap) = palmModel.detectAndMask(bitmap)
-
-                                    palmModel.getLastMaskedImagePath()?.let { maskedPath ->
-                                        val processedFileName = FileUtils.getFileNameFromPath(
-                                            FileUtils.generateProcessedImagePath(this@MainActivity)
-                                        )
-                                        val processedFile = imagePreprocessor.preprocessImage(maskedPath, processedFileName)
-
-                                        processedFile?.let { file ->
-                                            val processedBitmap = BitmapFactory.decodeFile(file.absolutePath)
-                                            val (normX, normY) = fingertipModel.detectFingertip(processedBitmap)
-                                            val finalBitmap = fingertipModel.drawFingertipOnImage(
-                                                bitmap,
-                                                normX,
-                                                normY
-                                            )
-                                            processedImage = finalBitmap
-                                            currentScreen = "preview"
-                                        }
-                                    }
+                                    val (normX, normY) = fingertipModel.detectFingertip(bitmap)
+                                    val finalBitmap = fingertipModel.drawFingertipOnImage(
+                                        bitmap,
+                                        normX,
+                                        normY
+                                    )
+                                    processedImage = finalBitmap
+                                    currentScreen = "preview"
                                 }
+
                             },
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
