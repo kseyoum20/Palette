@@ -39,11 +39,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Initialize models
-        palmModel = PalmModel(
-            context = this,
-            modelFileName = "palm_detection_without_custom_op.tflite",
-            anchorsFileName = "anchors.csv"
-        )
 
         fingertipModel = FingertipModel(
             context = this,
